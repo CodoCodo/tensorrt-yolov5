@@ -414,6 +414,7 @@ void doInference(IExecutionContext& context, cudaStream_t& stream, void **buffer
 }
 
 int main(int argc, char** argv) {
+    int image_count = 0;
     cudaSetDevice(DEVICE);
     // create a model using the API directly and serialize it to a stream
     char *trtModelStream{ nullptr };
@@ -435,6 +436,7 @@ int main(int argc, char** argv) {
     } else if (argc == 2 && std::string(argv[1]) == "-v") {
         std::ifstream file(engine_name, std::ios::binary);
         if (file.good()) {
+	    std::cout << "tdj here" << std::endl;
             file.seekg(0, file.end);
             size = file.tellg();
             file.seekg(0, file.beg);
@@ -483,8 +485,8 @@ int main(int argc, char** argv) {
     cudaStream_t stream;
     CHECK(cudaStreamCreate(&stream));
 
-    cv::VideoCapture capture(0);
-    //cv::VideoCapture capture("../overpass.mp4");
+    // cv::VideoCapture capture(0);
+    cv::VideoCapture capture("/home/tdj/project/media/overpass.mp4");
     //int fourcc = cv::VideoWriter::fourcc('M','J','P','G');
     //capture.set(cv::CAP_PROP_FOURCC, fourcc);
     if(!capture.isOpened()){
@@ -546,11 +548,20 @@ int main(int argc, char** argv) {
             }
         }
         
+#ifdef IMSHOW_OK
 	cv::imshow("yolov5",frame);
         key = cv::waitKey(1);
         if (key == 'q'){
             break; 
         }
+#else
+	if (image_count < 100) {
+	  std::ostringstream oss;
+	  oss << "yolo5_look_" << std::setw(4) << std::setfill('0') << image_count << ".png";
+	  cv::imwrite(oss.str(), frame);
+	}
+        ++image_count;
+#endif
 
 	fcount = 0;
     }
